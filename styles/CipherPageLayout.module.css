@@ -1,0 +1,25 @@
+.pageTitle {
+    font-size: xx-large;
+}
+
+.pageDescription {
+    margin-top: 9px;
+}
+
+.pageContentContainer {
+    margin-top: 18px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.menubarContainer {
+    flex-grow: 1;
+    max-width: 360px;
+    display: flex;
+    flex-flow: column nowrap;
+}
+
+.workbenchContainer {
+    margin-left: 24px;
+    flex-grow: 1;
+}
