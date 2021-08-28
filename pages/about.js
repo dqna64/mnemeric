@@ -5,7 +5,6 @@ function About(props) {
         <div className={styles.container}>
             Hi! Visit our{" "}
             <a
-                target="_blank"
                 className={styles.link}
                 href="https://devpost.com/software/mnemeric"
             >
@@ -16,7 +15,6 @@ function About(props) {
             <br />
             <br />
             <a
-                target="_blank"
                 className={styles.link}
                 href="https://github.com/dqna64/mnemeric"
             >
