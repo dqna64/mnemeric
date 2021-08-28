@@ -1,0 +1,6 @@
+.cardContainer {
+    border-radius: 30px;
+    background-color: aquamarine;
+    display: flex;
+    flex-flow: column nowrap;
+}
