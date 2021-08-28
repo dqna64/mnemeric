@@ -2,6 +2,9 @@
     width: 100%;
     font-size: xx-large;
 }
+.workbenchDescription {
+    margin-top: 10px;
+}
 
 .prompt {
     width: 100%;
@@ -44,19 +47,24 @@
 
 .ioContainerBoth {
     width: 100%;
+    padding: 10px 14px;
     display: flex;
     flex-flow: column nowrap;
+    align-items: flex-end;
 }
 
 .ioContainer {
-    margin: 8px 10px;
-    flex-grow: 1;
+    width: 100%;
     display: flex;
     flex-flow: row nowrap;
     align-items: center;
-    margin-bottom: 5px;
+    margin-top: 15px;
 }
 .ioTitle {
     font-size: 18px;
-    max-width: 280px;
+    flex-grow: 1;
+    width: 180px;
+}
+.inputFieldContainer {
+    flex-grow: 1;
 }

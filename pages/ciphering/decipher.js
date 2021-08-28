@@ -210,15 +210,14 @@ Huffman.TreeBuilder.prototype.compressCombinedTable = function (a) {
 
 const bits_per_dict_word = 13;
 
-const EncodingTextExamples = {
-    SEPERATORS: " -./",
+const EncodingCharacterSets = {
+    SEPARATORS: " -./",
     SPECIAL: " !\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~",
     CAPITAL: "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
     LOWERCASE: "abcdefghijklmnopqrstuvwxyz",
     NUMERIC: "0123456789",
-    BINARY: "10",
 };
-Object.freeze(EncodingTextExamples);
+Object.freeze(EncodingCharacterSets);
 
 const ExtendedEncoding = {
     BINARY: 0,
@@ -233,22 +232,22 @@ const ExtendedEncoding = {
 Object.freeze(ExtendedEncoding);
 
 function generate_control_bits_from_booleans(
-    seperators = false,
+    separators = false,
     special = false,
     capital = false,
     lowercase = false,
     numeric = false
 ) {
-    if (seperators && special) {
-        throw "seperators and special cannot both be set, this is reserved for extended encodings.";
+    if (separators && special) {
+        throw "separators and special cannot both be set, this is reserved for extended encodings.";
     }
 
-    if (!seperators && !special && !capital && !lowercase && !numeric) {
+    if (!separators && !special && !capital && !lowercase && !numeric) {
         throw "attempting to generate control bits with no encoding data, this is invalid.";
     }
 
     var control_bits = 0;
-    control_bits |= +seperators << 12;
+    control_bits |= +separators << 12;
     control_bits |= +special << 11;
     control_bits |= +capital << 10;
     control_bits |= +lowercase << 9;
@@ -257,14 +256,14 @@ function generate_control_bits_from_booleans(
     return control_bits;
 }
 
-export function generate_control_word_from__extended_type(encd_extended) {
+function generate_control_bits_from_extended_type(extension) {
     var control_bits = 0;
     // Set encd_seperator
     control_bits |= 1 << 12;
     control_bits |= 1 << 11;
 
     // Set extended encoding part.
-    control_bits |= (encd_extended & 7) << 8;
+    control_bits |= (extension & 7) << 8;
 
     return control_bits;
 }
@@ -299,7 +298,7 @@ function read_control_bits_booleans(control_bits) {
     var encd_lowercase = (control_bits >> 9) & 1;
     var encd_numeric = (control_bits >> 8) & 1;
     return {
-        seperators: encd_seperators,
+        separators: encd_seperators,
         special: encd_special,
         capital: encd_capital,
         lowercase: encd_lowercase,
@@ -307,8 +306,8 @@ function read_control_bits_booleans(control_bits) {
     };
 }
 
-export function encode_data(control_bits, data) {
-    // Check for extended encoding since seperators and special are mutually
+function encode_data(control_bits, data) {
+    // Check for extended encoding since separators and special are mutually
     // exclusive.
     if (read_control_bits_extended_flag(control_bits)) {
         throw "Unimplemented encoding schema (this is a prototype algorithm).";
@@ -330,18 +329,18 @@ export function encode_data(control_bits, data) {
 
         // Generate Huffman Encoding tree to match current encoding settings;
         var characters = "";
-        if (encd.seperators) characters += EncodingTextExamples.SEPERATORS;
-        if (encd.special) characters += EncodingTextExamples.SPECIAL;
-        if (encd.capital) characters += EncodingTextExamples.CAPITAL;
-        if (encd.lowercase) characters += EncodingTextExamples.LOWERCASE;
-        if (encd.numeric) characters += EncodingTextExamples.NUMERIC;
+        if (encd.separators) characters += EncodingCharacterSets.SEPARATORS;
+        if (encd.special) characters += EncodingCharacterSets.SPECIAL;
+        if (encd.capital) characters += EncodingCharacterSets.CAPITAL;
+        if (encd.lowercase) characters += EncodingCharacterSets.LOWERCASE;
+        if (encd.numeric) characters += EncodingCharacterSets.NUMERIC;
 
         // Encode data to binary using Huffman Encoding to optimise data transmission.
         var huffman_encoding = Huffman.treeFromText(characters);
         var binary_data = huffman_encoding.encode(data);
         /*for (let i = 0; i < binary_data.length; i++) {
-             console.log("Data: " + binary_data.charCodeAt(i));
-         }*/
+            console.log("Data: " + binary_data.charCodeAt(i));
+        }*/
     }
 
     var converted_data = convert_binary_to_word_data(binary_data);
@@ -362,7 +361,7 @@ export function encode_data(control_bits, data) {
             throw "word_key out of bounds.";
 
         code_phrase += word_dictionary[converted_data.word_data[i]];
-        code_phrase += " ";
+        if (i != converted_data.word_data.length) code_phrase += " ";
     }
 
     return code_phrase;
@@ -383,8 +382,8 @@ function convert_binary_to_word_data(binary_data) {
 
         word_data[word_index] |= curr_bit << (12 - out_bit_index);
         /*console.log("curr_ byte: " + curr_byte.toString(2));
-         console.log("curr_bit: " + curr_bit);
-         console.log();*/
+        console.log("curr_bit: " + curr_bit);
+        console.log();*/
     }
 
     // Number of zeroes padded to end;
@@ -422,69 +421,6 @@ function convert_word_data_to_binary(control_bits, word_data) {
     return binary_data;
 }
 
-function decode_data(code_phrase, delimiters = " -") {
-    var words = code_phrase.split("[" + delimiters + "]");
-
-    // Convert code_phrase to word_data.
-    var word_data = [];
-    var found = false;
-    for (let i = 0; i < words.length; i++) {
-        for (let j = 0; j < word_dictionary.length; j++) {
-            if (words[i] == word_dictionary[j]) {
-                //console.log(words[i]);
-                word_data[i] = j;
-                found = true;
-            }
-        }
-
-        if (!found) throw "Attempting to decode unknown word.";
-    }
-
-    console.log(word_data);
-    console.log(word_data.slice(1));
-    var control_bits = word_data[0];
-    var binary_data = convert_word_data_to_binary(
-        control_bits,
-        word_data.slice(1)
-    );
-
-    var encd_seperators = (control_bits >> 12) & 1;
-    var encd_special = (control_bits >> 11) & 1;
-
-    // Check for extended encoding since seperators and special are mutually
-    // exclusive.
-    if (read_control_bits_extended_flag(control_bits)) {
-        var encd_extended = read_control_bits_extended_type(control_bits);
-        // Now check for special types by using (ExtendedEncoding.BASE64 == encd_extended).
-        throw "Unimplemented encoded schema (this is a prototype algorithm).";
-        switch (encd_extended) {
-            case ExtendedEncoding.BINARY:
-                break;
-            case ExtendedEncoding.BASE64:
-                break;
-            case ExtendedEncoding.ASCII:
-                break;
-            default:
-                break;
-        }
-    } else {
-        var encd = read_control_bits_booleans(control_bits);
-
-        // Generate Huffman Encoding tree to match current encoding settings;
-        var characters = "";
-        if (encd.seperators) characters += EncodingTextExamples.SEPERATORS;
-        if (encd.special) characters += EncodingTextExamples.SPECIAL;
-        if (encd.capital) characters += EncodingTextExamples.CAPITAL;
-        if (encd.lowercase) characters += EncodingTextExamples.LOWERCASE;
-        if (encd.numeric) characters += EncodingTextExamples.NUMERIC;
-
-        // Encode data to binary using Huffman Encoding to optimise data transmission.
-        var huffman_encoding = Huffman.treeFromText(characters);
-    }
-
-    return huffman_encoding.decode(binary_data);
-}
-
 function automatically_determine_encoding(text) {
     var encoding_settings = [false, false, false, false, false];
 
@@ -505,7 +441,7 @@ function automatically_determine_encoding(text) {
             var char = text.charAt(i);
             if (
                 EncodingCharacterSets.SPECIAL.includes(char) &&
-                !EncodingCharacterSets.SEPERATORS.includes(char)
+                !EncodingCharacterSets.SEPARATORS.includes(char)
             ) {
                 needs_special = true;
             }
@@ -519,7 +455,7 @@ function automatically_determine_encoding(text) {
     }
 
     return {
-        seperators: encoding_settings[0],
+        separators: encoding_settings[0],
         special: encoding_settings[1],
         capital: encoding_settings[2],
         lowercase: encoding_settings[3],
@@ -527,32 +463,187 @@ function automatically_determine_encoding(text) {
     };
 }
 
-/*function encode_phone_number(international, phone_number) {
-     binary_data = []
-     if (international) {
-         binary_data[0] = 0;
-     }
- }*/
+function encode_phone_number(international, phone_number) {
+    word_data = [];
 
-//  function main() {
-//      var data = "7QKX235usVGnmTcidy";
-//      var encoding = generate_control_bits_from_booleans(
-//          (capital = true),
-//          (lowercase = true),
-//          (numeric = true)
-//      );
-//      var code_phrase = encode_data(encoding, data);
-//      console.log(code_phrase);
-//      console.log(decode_data(code_phrase));
-//  }
+    // Set international bit.
+    var word_count = 3;
+    if (international) {
+        binary_data[0] = 1 << 7;
+        word_count = 5;
+    }
 
-// main();
+    var data = BigInt(phone_number);
+    //console.log(String(data).length);
+    var word_index;
+    while (word_index < word_count) {
+        var curr_13_bits = Number(data % BigInt(8196));
+        data = data / BigInt(8196);
+        word_data[word_index] = curr_13_bits;
+        word_index += 1;
+    }
+
+    /*
+    var bit_index = 1;
+    // read from bigint first
+    while (word_count > 0) {
+        //console.log(data);
+        var curr_13_bits = data % BigInt(8196);
+        console.log(curr_13_bits.toString(2));
+        data = data / BigInt(8196);
+
+        var limit = 13 - (bit_index % 13)
+        for (var i = 0; i < limit; i++) {
+            var curr_word = Math.floor(bit_index / 13);
+            //console.log("curr_word: " + curr_word + " bit_index: " + bit_index);
+            var curr_bit = ((Number)(curr_13_bits) >> (12 - i)) & 1;
+            word_data[curr_word] |= curr_bit << (12 - (bit_index % 13));
+            bit_index += 1;
+        }
+
+        word_count -= 1;
+    }*/
+
+    var result = "";
+    for (let i = 0; i < word_data.length; i++) {
+        result += word_dictionary[word_data[i]];
+
+        if (i < word_data.length - 1) result += " ";
+    }
+    console.log(result);
+
+    return result;
+}
+
+function decode_phone_number(code_phrase, regex = /[\s\-]/) {
+    var words = code_phrase.split(regex);
+
+    // Convert code_phrase to word_data.
+    var word_data = [];
+    var index = 0;
+    for (let i = 0; i < words.length; i++) {
+        var found = false;
+        if (words[i].length != 0) {
+            for (let j = 0; j < word_dictionary.length; j++) {
+                if (words[i] == word_dictionary[j]) {
+                    //console.log(words[i]);
+                    word_data[index] = j;
+                    index += 1;
+                    found = true;
+                }
+            }
+
+            if (!found) throw "Attempting to decode unknown word.";
+        }
+    }
+
+    var international = (word_data[0] >> 12) & 1;
+    var eol_offset = 1;
+    if (international) {
+        eol_offset = 2;
+    }
+
+    var data = BigInt(0);
+    for (let i = 0; i < word_data.length; i++) {
+        curr_13_bits = word_data[i];
+
+        if (!(i < word_data.length - 1)) {
+            curr_13_bits = curr_13_bits >> eol_offset;
+        }
+        // Process word_data to remove trailing bits.
+
+        data += BigInt(curr_13_bits) * BigInt(8196) ** BigInt(i);
+    }
+
+    return String(data);
+}
+
+function decode_data(code_phrase, regex = /[\s\-]/) {
+    var words = code_phrase.split(regex);
+
+    // Convert code_phrase to word_data.
+    var word_data = [];
+    var index = 0;
+    for (let i = 0; i < words.length; i++) {
+        var found = false;
+        if (words[i].length != 0) {
+            for (let j = 0; j < word_dictionary.length; j++) {
+                if (words[i] == word_dictionary[j]) {
+                    //console.log(words[i]);
+                    word_data[index] = j;
+                    index += 1;
+                    found = true;
+                }
+            }
+
+            if (!found) throw "Attempting to decode unknown word.";
+        }
+    }
+
+    //console.log(word_data);
+    //console.log(word_data.slice(1));
+    var control_bits = word_data[0];
+    var binary_data = convert_word_data_to_binary(
+        control_bits,
+        word_data.slice(1)
+    );
+
+    var encd_seperators = (control_bits >> 12) & 1;
+    var encd_special = (control_bits >> 11) & 1;
+
+    // Check for extended encoding since separators and special are mutually
+    // exclusive.
+    if (read_control_bits_extended_flag(control_bits)) {
+        var encd_extended = read_control_bits_extended_type(control_bits);
+        // Now check for special types by using (ExtendedEncoding.BASE64 == encd_extended).
+        throw "Unimplemented encoded schema (this is a prototype algorithm).";
+        switch (encd_extended) {
+            case ExtendedEncoding.BINARY:
+                break;
+            case ExtendedEncoding.BASE64:
+                break;
+            case ExtendedEncoding.ASCII:
+                break;
+            default:
+                break;
+        }
+    } else {
+        var encd = read_control_bits_booleans(control_bits);
+
+        // Generate Huffman Encoding tree to match current encoding settings;
+        var characters = "";
+        if (encd.separators) characters += EncodingCharacterSets.SEPARATORS;
+        if (encd.special) characters += EncodingCharacterSets.SPECIAL;
+        if (encd.capital) characters += EncodingCharacterSets.CAPITAL;
+        if (encd.lowercase) characters += EncodingCharacterSets.LOWERCASE;
+        if (encd.numeric) characters += EncodingCharacterSets.NUMERIC;
+
+        // Encode data to binary using Huffman Encoding to optimise data transmission.
+        var huffman_encoding = Huffman.treeFromText(characters);
+    }
+
+    return huffman_encoding.decode(binary_data);
+}
+
+// function main() {
+//     //var data = "7QKX235usVGnmTcidy";
+//     //var encoding = generate_control_bits_from_booleans(capital=true, lowercase=true, numeric=true);
+//     //var code_phrase = encode_data(encoding, data);
+
+//     var encoded = encode_phone_number(false, "2334556556");
+//     var decoded = decode_phone_number(encoded);
+
+//     //console.log(automatically_determine_encoding("-"));
+
+//     //console.log(code_phrase);
+//     //console.log(decode_data(code_phrase));
+// }
 
 //==============
 
 import CipherPageLayout from "../../components/cipher-page-layout/CipherPageLayout";
 import { decipherOptionsData } from "../../optionsData.js";
-import { Paper, Tabs, Tab, Switch, TextField } from "@material-ui/core";
+import { Paper, Tabs, Tab, Switch, TextField, Button } from "@material-ui/core";
 import { makeStyles } from "@material-ui/core/styles";
 import { useEffect, useState } from "react";
 import styles from "../../styles/CipherPage.module.css";
@@ -569,7 +660,7 @@ const useStyles = makeStyles((theme) => ({
     },
     cipherDirectionSwitch: {
         // backgroundColor: "#5b76eb",
-        background: "linear-gradient(45deg, #5b76eb 30%, #86abf7 90%)",
+        background: "linear-gradient(45deg, #91ede9 30%, #86abf7 90%)",
         fontWeight: "bold",
         borderRadius: 15,
         width: "450px",
@@ -586,6 +677,17 @@ const useStyles = makeStyles((theme) => ({
     optionCard: {
         width: "100%",
     },
+    clipButton: {
+        width: 240,
+        background: "linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)",
+        borderRadius: 10,
+        border: 0,
+        color: "white",
+        marginTop: 10,
+        height: 48,
+        padding: "0 30px",
+        boxShadow: "0 3px 5px 2px rgba(33, 203, 243, .3)",
+    },
 }));
 
 function Decipher(props) {
@@ -596,7 +698,7 @@ function Decipher(props) {
         separators: false,
         special: false,
         capital: false,
-        lower: false,
+        lowercase: false,
         numeric: true,
     });
     const [inputState, setInputState] = useState("");
@@ -615,55 +717,85 @@ function Decipher(props) {
     }
 
     useEffect(() => {
+        let autoEncoding = automatically_determine_encoding(inputState);
+        console.log("autoEncoding: ", autoEncoding);
+        // setOptions({ ...options, ["separators"]: autoEncoding.separators });
+        // setOptions({ ...options, ["special"]: autoEncoding.special });
+        // setOptions({ ...options, ["capital"]: autoEncoding.capital });
+        // setOptions({ ...options, ["lowercase"]: autoEncoding.lowercase });
+        // setOptions({ ...options, ["numeric"]: autoEncoding.numeric });
+        setOptions(autoEncoding);
         console.log("cipherDirection: ", cipherDirection);
         console.log("options: ", options);
-        console.log("inputState: ", inputState);
-        setOutputState(inputState);
+    }, []);
 
+    function submitInput() {
         if (cipherDirection) {
             // Decode from words
-            let decoded = decode_data(inputState);
-            setOutputState(decoded);
+            let decoded;
+            try {
+                decoded = decode_data(inputState);
+                setOutputState(decoded);
+            } catch (error) {
+                console.error(error);
+            }
         } else {
             // Encode to words
-            var encoding = generate_control_bits_from_booleans(
-                options.separators,
-                options.special,
-                options.capital,
-                options.lower,
-                options.numeric
-            );
-            let autoEncoding = automatically_determine_encoding(inputState);
-            if (!encoding.separators && autoEncoding.seperators) {
-                options.separators = true;
-                encoding.separators = true;
-            }
-            if (!encoding.special && autoEncoding.special) {
-                options.special = true;
-                encoding.special = true;
-            }
-            if (!encoding.capital && autoEncoding.capital) {
-                options.capital = true;
-                encoding.capital = true;
-            }
-            if (!encoding.lower && autoEncoding.lower) {
-                options.lower = true;
-                encoding.lower = true;
-            }
-            if (!encoding.numeric && autoEncoding.numeric) {
-                options.numeric = true;
-                encoding.numeric = true;
-            }
+            // var encoding = {
+            //     separators: options.separators,
+            //     special: options.special,
+            //     capital: options.capital,
+            //     lowercase: options.lowercase,
+            //     numeric: options.numeric,
+            // };
 
-            var code_phrase = encode_data(encoding, inputState);
-            setOutputState(code_phrase);
+            let autoEncoding = automatically_determine_encoding(inputState);
+            console.log("autoEncoding: ", autoEncoding);
+            // setOptions({ ...options, ["separators"]: autoEncoding.separators });
+            // setOptions({ ...options, ["special"]: autoEncoding.special });
+            // setOptions({ ...options, ["capital"]: autoEncoding.capital });
+            // setOptions({ ...options, ["lowercase"]: autoEncoding.lowercase });
+            // setOptions({ ...options, ["numeric"]: autoEncoding.numeric });
+            setOptions(autoEncoding);
+            console.log("cipherDirection: ", cipherDirection);
+            console.log("options: ", options);
+
+            var encodingBitString = generate_control_bits_from_booleans(
+                autoEncoding.separators,
+                autoEncoding.special,
+                autoEncoding.capital,
+                autoEncoding.lowercase,
+                autoEncoding.numeric
+            );
+
+            // if (
+            //     autoEncoding.separators ||
+            //     autoEncoding.special ||
+            //     autoEncoding.capital ||
+            //     autoEncoding.lowercase ||
+            //     autoEncoding.numeric
+            // ) {
+            //     var code_phrase = encode_data(encodingBitString, inputState);
+            //     setOutputState(code_phrase);
+            // } else {
+            //     setOutputState("");
+            // }
+            try {
+                var code_phrase = encode_data(encodingBitString, inputState);
+                setOutputState(code_phrase);
+            } catch {
+                setOutputState("");
+            }
+            console.log("inputState: ", inputState);
         }
-    }, [cipherDirection, options, inputState]);
+    }
 
     return (
         <CipherPageLayout data={decipherOptionsData}>
             <Paper classes={{ root: classes.workbench }} elevation={5}>
-                <div className={styles.workbenchTitle}>Custom</div>
+                <div className={styles.workbenchTitle}>
+                    Convert between code and natural language.
+                </div>
                 <div className={styles.workbenchDescription}>
                     Specify the format of your code manually with the options
                     below, and we will convert it into a natural language
@@ -750,9 +882,9 @@ function Decipher(props) {
                     <div className={styles.optionContainer}>
                         <div className={styles.optionSwitchCont}>
                             <Switch
-                                checked={options.lower}
+                                checked={options.lowercase}
                                 onChange={handleOptionsChange}
-                                name="lower"
+                                name="lowercase"
                                 inputProps={{
                                     "aria-label": "primary checkbox",
                                 }}
@@ -789,7 +921,7 @@ function Decipher(props) {
                     <div className={styles.info}>
                         {cipherDirection
                             ? "Input your code in the format specified by the above options. It will be converted into a natural language phrase."
-                            : "Input a space or hyphen separated natural language phrase you would like to convert into a code."}
+                            : "Input a space or hyphen seperated natural language phrase you would like to convert into a code."}
                     </div>
                     <div className={styles.ioContainerBoth}>
                         <div className={styles.ioContainer}>
@@ -807,11 +939,19 @@ function Decipher(props) {
                                 minRows={3}
                             />
                         </div>
+                        <Button
+                            classes={{
+                                root: classes.clipButton,
+                                label: classes.clipButtonContent,
+                            }}
+                            onClick={submitInput}
+                        >
+                            {"Convert"}
+                        </Button>
                         <div className={styles.ioContainer}>
                             <div className={styles.ioTitle}>
                                 Output {cipherDirection ? "words" : "code"}
                             </div>
-
                             <TextField
                                 id="output"
                                 variant="outlined"
@@ -824,6 +964,17 @@ function Decipher(props) {
                                 minRows={3}
                             />
                         </div>
+                        <Button
+                            classes={{
+                                root: classes.clipButton,
+                                label: classes.clipButtonContent,
+                            }}
+                            onClick={() => {
+                                navigator.clipboard.writeText(outputState);
+                            }}
+                        >
+                            {"Copy to clipboard"}
+                        </Button>
                     </div>
                 </Paper>
             </Paper>

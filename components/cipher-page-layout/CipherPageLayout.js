@@ -5,10 +5,10 @@ import MenuBar from "./MenuBar";
 function CipherPageLayout(props) {
     return (
         <Fragment>
-            <div className={styles.pageTitle}>Decipher</div>
+            {/* <div className={styles.pageTitle}>Decipher</div>
             <div className={styles.pageDescription}>
                 Convert a code into natural language.
-            </div>
+            </div> */}
             <div className={styles.pageContentContainer}>
                 <div className={styles.menubarContainer}>
                     <MenuBar options={props.data} />
