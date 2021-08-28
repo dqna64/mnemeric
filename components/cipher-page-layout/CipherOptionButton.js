@@ -28,7 +28,7 @@ function CipherOptionButton(props) {
 
     return (
         <Button
-            onClick={() => router.push(`/ciphering/decipher/${props.route}`)}
+            onClick={() => props.onClickFn(props.settings)}
             classes={{
                 root: classes.buttonRoot,
                 label: classes.buttonContent,

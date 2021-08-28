@@ -26,7 +26,9 @@ function MenuBar(props) {
                     title={option.title}
                     example={option.example}
                     route={option.route}
+                    settings={option.options}
                     key={id}
+                    onClickFn={props.handleClick}
                 />
             ))}
         </Paper>

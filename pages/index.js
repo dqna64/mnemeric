@@ -712,10 +712,6 @@ function Decipher(props) {
         setOptions({ ...options, [event.target.name]: event.target.checked });
     };
 
-    const setAllOptions = (newOptions) => {
-        setOptions(newOptions);
-    };
-
     function handleInputChange(event) {
         setInputState(event.target.value);
     }
@@ -799,7 +795,7 @@ function Decipher(props) {
             <div className={styles.menubarContainer}>
                 <MenuBar
                     options={decipherOptionsData}
-                    handleClick={() => changeOptions}
+                    handleClick={setOptions}
                 />
             </div>
             <div className={styles.workbenchContainer}>
