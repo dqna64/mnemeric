@@ -27,10 +27,10 @@ function NavigationBar() {
             </Grid>
             <Grid item xs={6} container justifyContent="flex-end" wrap="nowrap">
                 <Grid item classes={{ root: styles.navbarItemRight }}>
-                    <Link href="/ciphering/cipher">Cipher</Link>
+                    <Link href="/">Cipher</Link>
                 </Grid>
                 <Grid item classes={{ root: styles.navbarItemRight }}>
-                    <Link href="/ciphering/decipher">Decipher</Link>
+                    <Link href="/">Decipher</Link>
                 </Grid>
                 <Grid item classes={{ root: styles.navbarItemRight }}>
                     <Link href="/about">About</Link>
