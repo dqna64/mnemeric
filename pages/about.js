@@ -18,7 +18,7 @@ function About(props) {
                 className={styles.link}
                 href="https://github.com/dqna64/mnemeric"
             >
-                View this project's sourcecode on GitHub
+                {"View this project's sourcecode on GitHub"}
             </a>
             .
         </div>
