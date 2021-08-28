@@ -35,3 +35,16 @@
     max-width: 180px;
     flex-grow: 4;
 }
+
+.ioContainerBoth {
+    display: flex;
+}
+
+.ioContainer {
+    display: flex;
+    flex-flow: column nowrap;
+    align-items: center;
+}
+.ioTitle {
+    font-size: 18px;
+}

@@ -1,6 +1,6 @@
 import CipherPageLayout from "../../components/cipher-page-layout/CipherPageLayout";
 import { decipherOptionsData } from "../../optionsData.js";
-import { Paper, Tabs, Tab, Switch } from "@material-ui/core";
+import { Paper, Tabs, Tab, Switch, TextField } from "@material-ui/core";
 import { makeStyles } from "@material-ui/core/styles";
 import { useEffect, useState } from "react";
 import styles from "../../styles/CipherPage.module.css";
@@ -47,6 +47,8 @@ function Decipher(props) {
         lower: false,
         numeric: true,
     });
+    const [inputState, setInputState] = useState("");
+    const [outputState, setOutputState] = useState("");
 
     const toggleCipherDirection = (event, newValue) => {
         setCipherDirection(newValue);
@@ -56,9 +58,16 @@ function Decipher(props) {
         setOptions({ ...options, [event.target.name]: event.target.checked });
     };
 
+    function handleInputChange(event) {
+        setInputState(event.target.value);
+    }
+
     useEffect(() => {
-        console.log("effect", options);
-    }, [cipherDirection, options]);
+        console.log("cipherDirection: ", cipherDirection);
+        console.log("options: ", options);
+        console.log("inputState: ", inputState);
+        setOutputState(inputState);
+    }, [cipherDirection, options, inputState]);
 
     return (
         <CipherPageLayout data={decipherOptionsData}>
@@ -167,6 +176,39 @@ function Decipher(props) {
                         <div className={styles.optionLabel}>Decimal digits</div>
                         <div className={styles.optionExamples}>
                             {"0123456789"}
+                        </div>
+                    </div>
+                </Paper>
+                <Paper className={classes.stepContainer}>
+                    <div className={styles.prompt}>
+                        {cipherDirection ? "Enter your code" : "Enter a phrase"}
+                    </div>
+                    <div className={styles.info}>
+                        {cipherDirection
+                            ? "Input the code you would like to convert into a natural language phrase."
+                            : "Input the natural language phrase you would like to convert into a code."}
+                    </div>
+                    <div className={styles.ioContainerBoth}>
+                        <div className={styles.ioContainer}>
+                            <div className={styles.ioTitle}>Input</div>
+                            <TextField
+                                id="input"
+                                variant="outlined"
+                                value={inputState}
+                                onChange={handleInputChange}
+                            />
+                        </div>
+                        <div className={styles.ioContainer}>
+                            <div className={styles.ioTitle}>Output</div>
+
+                            <TextField
+                                id="output"
+                                variant="outlined"
+                                value={outputState}
+                                InputProps={{
+                                    readOnly: true,
+                                }}
+                            />
                         </div>
                     </div>
                 </Paper>
