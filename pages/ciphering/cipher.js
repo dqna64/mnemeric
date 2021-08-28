@@ -1,6 +1,6 @@
-import styles from "../styles/About.module.css";
+import styles from "../../styles/Cipher.module.css";
 
-function About(props) {
+function Cipher(props) {
     return (
         <div>
             <div>hdfsk</div>
@@ -9,4 +9,4 @@ function About(props) {
     );
 }
 
-export default About;
+export default Cipher;

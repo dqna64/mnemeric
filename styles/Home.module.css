@@ -1,10 +1,14 @@
 .homePageContainer {
+    padding: 0 80px;
 }
 
 .headingText {
+    font-size: xx-large;
+    max-width: 700px;
 }
 
 .optionCardsContainer {
+    margin-top: 50px;
     display: flex;
     justify-content: space-around;
 }
