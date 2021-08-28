@@ -5,7 +5,14 @@
     flex-direction: column;
     justify-content: flex-start;
     align-items: center;
+    /* height: 100vh; */
+}
+
+.parallaxBackground {
+    /* position: fixed; */
     height: 100vh;
+    background-image: url("/dark-blue-blurred-background-vector-portrait.jpg");
+    background-size: 100%;
 }
 
 .headerContainer {
@@ -53,7 +60,7 @@
 .bodyContentContainer {
     flex-grow: 1;
     max-width: 1280px;
-    padding: 40px 50px;
+    padding: 15px 50px;
 }
 
 .footerContainer {
