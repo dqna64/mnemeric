@@ -1,0 +1,11 @@
+.container {
+    margin: 30px 60px;
+    font-size: large;
+}
+
+.link {
+    color: #0d77e0;
+}
+.link:hover {
+    text-decoration: underline;
+}

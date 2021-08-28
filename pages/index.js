@@ -712,6 +712,10 @@ function Decipher(props) {
         setOptions({ ...options, [event.target.name]: event.target.checked });
     };
 
+    const setAllOptions = (newOptions) => {
+        setOptions(newOptions);
+    };
+
     function handleInputChange(event) {
         setInputState(event.target.value);
     }
@@ -793,7 +797,10 @@ function Decipher(props) {
     return (
         <div className={styles.pageContentContainer}>
             <div className={styles.menubarContainer}>
-                <MenuBar options={decipherOptionsData} />
+                <MenuBar
+                    options={decipherOptionsData}
+                    handleClick={() => changeOptions}
+                />
             </div>
             <div className={styles.workbenchContainer}>
                 <Paper classes={{ root: classes.workbench }} elevation={5}>
@@ -810,7 +817,8 @@ function Decipher(props) {
                             Choose your conversion direction
                         </div>
                         <div className={styles.info}>
-                            Convert a code into natural langauge.
+                            Encode a code into a unique phrase, or decode a
+                            phrase back into its original code.
                         </div>
                         <Paper className={classes.cipherDirectionSwitch}>
                             <Tabs
@@ -865,6 +873,11 @@ function Decipher(props) {
                             </div>{" "}
                             <div className={styles.optionExamples}>
                                 {" !\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~"}
+                                <br />
+                                <br />
+                                {
+                                    "Note that if this option is checked, then the special characters option is disabled."
+                                }
                             </div>
                         </div>
                         <div className={styles.optionContainer}>
