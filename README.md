@@ -2,7 +2,7 @@
 
 Mnemeric is a data encoding algorithm for turning lengthy, unintelligible codes like device serial numbers and passcodes into natural language phrases that you can remember and communicate easily.
 
-This prototype was developed in 39hrs for the SYNCSHACK 2021 hackathon. It is the winner of the SYNCSHACK Best Algorithm Prize.
+This prototype was developed in 39hrs for the SYNCSHACK 2021 hackathon, and won the competition's Best Algorithm Prize.
 
 See a [working prototype here](https://mnemeric.vercel.app/).
 
