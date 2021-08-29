@@ -933,12 +933,12 @@ function Decipher(props) {
                     </Paper>
                     <Paper className={classes.stepContainer}>
                         <div className={styles.prompt}>
-                            {cipherDirection
+                            {!cipherDirection
                                 ? "Enter your code"
                                 : "Enter a phrase"}
                         </div>
                         <div className={styles.info}>
-                            {cipherDirection
+                            {!cipherDirection
                                 ? "Input your code in the format specified by the above options. It will be converted into a natural language phrase."
                                 : "Input a space or hyphen seperated natural language phrase you would like to convert into a code."}
                         </div>
