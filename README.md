@@ -1,34 +1,108 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Mnemeric
+## Background
+This project is the product of our accumulated frustration having to remember lengthy and confusing credit card details, passwords though, student ids, phone numbers, and to communicate gift card codes and device serial numbers to technical support over the phone. Humans naturally aren't great at remembering unintelligible sequences of unrelated symbols well - they aren’t just as meaningful as words.
 
-## Getting Started
+Reducing this information overload without sacrificing our privacy will declutter our heads and enable all individuals who participate in modern life to focus on what really matters.
 
-First, run the development server:
+## What is Mnemeric
+Mnemeric is a cipher that translates between binary data and natural language. Users can supply complex sequences of ASCII characters on our website and encode them into simple, memorable words. They are able to customise the settings to cater for various code types (numeric, alphanumeric, UPC, ISBN etc.) Inversely, natural language phrases can also be decoded back into ASCII code.
 
-```bash
-npm run dev
-# or
-yarn dev
-```
+## The Filtered Dictionary of Words for Encoding
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+We calculated the frequencies of all the words in the OANC (Open American National Corpus), applied some length filtering and character filtering (lowercase, remove hyphen etc.), then after filtering profanity using a profanity list from Carnegie Mellon University, we took the top 8196 most frequent words. This allows us to encode 13 bits into a single dictionary word.
+2^13 = 8196
 
-You can start editing the page by modifying `pages/index.js`. The page auto-updates as you edit the file.
 
-[API routes](https://nextjs.org/docs/api-routes/introduction) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.js`.
+## Encoding Scheme and Control Word
 
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/api-routes/introduction) instead of React pages.
+Since encoding directly between ASCII and dictionary words will only provide a word to character ratio of **13/8**, which is quite poor, and the fact that many types of data in the real world have a limited alphabet of characters, we decided to implement an encoding scheme to optimise the encoding of different types of data. 
+ Our scheme uses a **13 bit control word **at the start of the code phrase to store data about the encoding scheme (5 bits), a message length offset (4 bits) which is necessary for accurate decoding, room for a small checksum (2 bits) for validation, and a encoding number (2 bits) which allows the user to select between four possible encodings. The encoding number serves to allow users to avoid rare code phrases which contain several duplicate words, or specific words.
 
-## Learn More
 
-To learn more about Next.js, take a look at the following resources:
+<table>
+  <tr>
+   <td>
+<strong>0</strong>
+   </td>
+   <td><strong>1</strong>
+   </td>
+   <td><strong>2</strong>
+   </td>
+   <td><strong>3</strong>
+   </td>
+   <td><strong>4</strong>
+   </td>
+   <td><strong>5</strong>
+   </td>
+   <td><strong>6</strong>
+   </td>
+   <td><strong>7</strong>
+   </td>
+   <td><strong>8</strong>
+   </td>
+   <td><strong>9</strong>
+   </td>
+   <td><strong>10</strong>
+   </td>
+   <td><strong>11</strong>
+   </td>
+   <td><strong>12</strong>
+   </td>
+  </tr>
+  <tr>
+   <td colspan="5" ><strong>Encoding Scheme</strong>
+   </td>
+   <td colspan="4" ><strong>End of Message Offset</strong>
+   </td>
+   <td colspan="2" ><strong>Checksum</strong>
+   </td>
+   <td colspan="2" ><strong>Hash</strong>
+   </td>
+  </tr>
+</table>
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
 
-## Deploy on Vercel
+ Please note that the **checksum and hash components are not implemented** in the demo.
+ The **Encoding Scheme** is a set of five boolean values that determine whether a common set of characters is present in the encoded data, this makes the encoding of data that has a limited character set (such as numeric only) much more efficient.
+ 
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+<table>
+  <tr>
+   <td>
+<strong>0</strong>
+   </td>
+   <td><strong>1</strong>
+   </td>
+   <td><strong>2</strong>
+   </td>
+   <td><strong>3</strong>
+   </td>
+   <td><strong>4</strong>
+   </td>
+  </tr>
+  <tr>
+   <td colspan="5" ><strong>Encoding Scheme</strong> huffman encoding
+   </td>
+  </tr>
+  <tr>
+   <td><strong>Separators</strong>
+   </td>
+   <td><strong>Special</strong>
+   </td>
+   <td><strong>Capital</strong>
+   </td>
+   <td><strong>Lowercase</strong>
+   </td>
+   <td><strong>Numeric</strong>
+   </td>
+  </tr>
+</table>
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+
+
+Note that the **Separators** character set is a subset of the **Special** character set, so these values are mutually exclusive. If both of these values are set to true, we consider the following three bits to represent an extended encoding type.
+
+## The Web Application
+
+We used [Next.js](https://nextjs.org/) bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app). The front end was built with React.js and various component libraries such as Material UI. The app is run completely clientside (see sourcecode) so you can be sure than none of your input into the website is exposed elsewhere on the web.
