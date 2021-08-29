@@ -1,6 +1,10 @@
 # Mnemeric
 
-[This is a working prototype](https://mnemeric.vercel.app/) developed in 39hrs for the SYNCSHACK 2021 hackathon.
+This project was developed in 39hrs for the SYNCSHACK 2021 hackathon. It is the winner of the SYNCSHACK Best Algorithm Prize.
+
+See a [working prototype here](https://mnemeric.vercel.app/).
+
+Watch a [video demo here](https://youtu.be/Sd_gbSc3MDE).
 
 ## Background
 This project is the product of our accumulated frustration having to remember lengthy and confusing credit card details, passwords though, student ids, phone numbers, and to communicate gift card codes and device serial numbers to technical support over the phone. Humans naturally aren't great at remembering unintelligible sequences of unrelated symbols well - they aren’t just as meaningful as words.
